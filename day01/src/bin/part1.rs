@@ -1,8 +1,10 @@
-use std::fs;
-
 fn main() {
-    let input = fs::read_to_string("day1/input.txt").expect("unable to read file");
+    let input = include_str!("../../../day01/input.txt");
+    let distance = process(input);
+    println!("The result is {}", distance);
+}
 
+fn process(input: &str) -> i32 {
     let mut list1: Vec<i32> = Vec::new();
     let mut list2: Vec<i32> = Vec::new();
     for line in input.lines() {
@@ -14,10 +16,20 @@ fn main() {
     list1.sort();
     list2.sort();
 
-    let distance = list1
+    list1
         .iter()
         .zip(list2.iter())
-        .fold(0, |acc, num| acc + (num.0 - num.1).abs());
+        .fold(0, |acc, num| acc + (num.0 - num.1).abs())
+}
 
-    println!("The total distance is {}", distance);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test() {
+        let check = include_str!("../../../day01/check.txt");
+        process(check);
+        assert_eq!(process(check), 11)
+    }
 }
