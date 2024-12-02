@@ -17,12 +17,14 @@ fn increasing(input: &Vec<i32>) -> IncreasingResult {
             all_increasing = false;
         }
     }
+
     let mut all_decreasing = true;
     for window in input.windows(2) {
         if window[0] < window[1] {
             all_decreasing = false;
         }
     }
+
     match (all_increasing, all_decreasing) {
         (true, false) => IncreasingResult::Increasing,
         (false, true) => IncreasingResult::Decreasing,
@@ -34,9 +36,8 @@ fn numbers_close(input: &Vec<i32>) -> bool {
     let mut result = true;
     for window in input.windows(2) {
         let diff = (window[0] - window[1]).abs();
-        match diff {
-            1..=3 => (),
-            _ => result = false,
+        if !(1..=3).contains(&diff) {
+            result = false;
         }
     }
     result
