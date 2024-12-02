@@ -13,13 +13,10 @@ fn process(input: &str) -> i32 {
         list2.push(tokens.next().unwrap().parse().unwrap());
     }
 
-    let mut similarity = 0;
-
-    for num in list1.iter() {
-        similarity += num * list2.iter().filter(|x| *x == num).count() as i32;
-    }
-
-    similarity
+    list1
+        .iter()
+        .map(|num1| num1 * list2.iter().filter(|x| *x == num1).count() as i32)
+        .sum()
 }
 
 #[cfg(test)]

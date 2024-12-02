@@ -19,7 +19,8 @@ fn process(input: &str) -> i32 {
     list1
         .iter()
         .zip(list2.iter())
-        .fold(0, |acc, num| acc + (num.0 - num.1).abs())
+        .map(|(x, y)| (x - y).abs())
+        .sum()
 }
 
 #[cfg(test)]
