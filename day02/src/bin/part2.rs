@@ -42,6 +42,16 @@ fn numbers_close(input: &Vec<i32>) -> bool {
     result
 }
 
+fn safe_undamped(input: &Vec<i32>) -> bool {
+    let safe_from_incr = match increasing(&input) {
+        IncreasingResult::Neither => false,
+        _ => true,
+    };
+    let safe_from_close = numbers_close(&input);
+
+    safe_from_close && safe_from_incr
+}
+
 fn process(input: &str) -> i32 {
     let mut safe_count = 0;
     for line in input.lines() {
@@ -49,13 +59,15 @@ fn process(input: &str) -> i32 {
             .split_whitespace()
             .map(|s| s.parse().unwrap())
             .collect();
-        let safe_from_incr = match increasing(&numbers) {
-            IncreasingResult::Neither => false,
-            _ => true,
-        };
-        let safe_from_close = numbers_close(&numbers);
-
-        if safe_from_incr == true && safe_from_close == true {
+        let mut is_safe = false;
+        for i in 0..numbers.len() {
+            let mut numbers_smaller = numbers.clone();
+            numbers_smaller.remove(i);
+            if safe_undamped(&numbers_smaller) {
+                is_safe = true;
+            }
+        }
+        if is_safe {
             safe_count += 1;
         }
     }
@@ -69,7 +81,7 @@ mod tests {
     #[test]
     fn test() {
         let check = include_str!("../../../day02/check.txt");
-        assert_eq!(process(check), 2)
+        assert_eq!(process(check), 4)
     }
 
     #[test]
