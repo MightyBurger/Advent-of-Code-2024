@@ -1,9 +1,3 @@
-fn main() {
-    let input = include_str!("../../../day01/input.txt");
-    let distance = process(input);
-    println!("The result is {}", distance);
-}
-
 fn process(input: &str) -> i32 {
     let mut list1: Vec<i32> = Vec::new();
     let mut list2: Vec<i32> = Vec::new();
@@ -21,6 +15,12 @@ fn process(input: &str) -> i32 {
         .zip(list2.iter())
         .map(|(x, y)| (x - y).abs())
         .sum()
+}
+
+fn main() {
+    let input = include_str!("../../../day01/input.txt");
+    let distance = process(input);
+    println!("The result is {}", distance);
 }
 
 #[cfg(test)]

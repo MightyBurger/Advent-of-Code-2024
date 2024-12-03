@@ -1,8 +1,3 @@
-fn main() {
-    let input = include_str!("../../../day02/input.txt");
-    println!("The result is {}", process(input));
-}
-
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
 enum IncreasingResult {
     Increasing,
@@ -73,6 +68,11 @@ fn process(input: &str) -> i32 {
         }
     }
     safe_count
+}
+
+fn main() {
+    let input = include_str!("../../../day02/input.txt");
+    println!("The result is {}", process(input));
 }
 
 #[cfg(test)]
