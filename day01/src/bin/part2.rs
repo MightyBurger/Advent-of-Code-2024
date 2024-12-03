@@ -26,7 +26,6 @@ mod tests {
     #[test]
     fn test() {
         let check = include_str!("../../../day01/check.txt");
-        process(check);
         assert_eq!(process(check), 31)
     }
 }
