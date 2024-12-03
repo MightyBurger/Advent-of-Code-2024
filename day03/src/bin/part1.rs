@@ -1,7 +1,7 @@
 use regex::Regex;
 
 fn process(input: &str) -> i32 {
-    let regex = Regex::new(r"(?:mul\((\d+),(\d+)\))").unwrap();
+    let regex = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
     let mut sum = 0;
     for capture in regex.captures_iter(input) {
         let left: i32 = capture[1].parse().expect("failed to parse");
