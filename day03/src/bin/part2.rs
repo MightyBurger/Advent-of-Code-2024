@@ -1,7 +1,7 @@
 use regex::Regex;
 
 fn process(input: &str) -> i32 {
-    let regex_ignore = Regex::new(r"(?s)(?:don\'t\(\).*?do\(\)|don\'t\(\).*?$)").unwrap();
+    let regex_ignore = Regex::new(r"(?s)don\'t\(\).*?do\(\)|don\'t\(\).*?$").unwrap();
     let regex_extract_mult = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
     let mut sum = 0;
 
