@@ -17,6 +17,7 @@ fn check_for_xmas(input: &Vec<Vec<char>>, row: usize, col: usize) -> bool {
 
     (cross1 == "MAS" || cross1 == "SAM") && (cross2 == "MAS" || cross2 == "SAM")
 }
+
 fn process(input: &str) -> i32 {
     let mut invec: Vec<Vec<char>> = Vec::new();
     for line in input.lines() {
