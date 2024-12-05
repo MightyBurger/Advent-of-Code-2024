@@ -10,9 +10,7 @@ fn pagesort(manual: &mut Vec<i32>, rules: &Vec<Rule>) -> bool {
         let right_pos = manual.iter().position(|page| *page == rule.right);
         match (left_pos, right_pos) {
             (Some(left_pos), Some(right_pos)) if right_pos < left_pos => {
-                let temp = manual[left_pos];
-                manual[left_pos] = manual[right_pos];
-                manual[right_pos] = temp;
+                manual.swap(left_pos, right_pos);
                 modified = true;
             }
             _ => (),

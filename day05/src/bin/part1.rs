@@ -3,7 +3,7 @@ struct Rule {
     right: i32,
 }
 
-fn follows_rules(manual: &Vec<i32>, rules: &Vec<Rule>) -> bool {
+fn follows_rules(manual: &[i32], rules: &[Rule]) -> bool {
     let mut follows_rules = true;
     for rule in rules.iter() {
         let left_pos = manual.iter().position(|page| *page == rule.left);
