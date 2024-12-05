@@ -18,7 +18,10 @@ fn follows_rules(manual: &Vec<i32>, rules: &Vec<Rule>) -> bool {
     follows_rules
 }
 
-fn process(input1: &str, input2: &str) -> i32 {
+fn process(input: &str) -> i32 {
+    let input1 = input.split("\r\n\r\n").nth(0).unwrap();
+    let input2 = input.split("\r\n\r\n").nth(1).unwrap();
+
     let mut rules: Vec<Rule> = Vec::new();
     for line in input1.lines() {
         let left: i32 = line.split('|').nth(0).unwrap().parse().unwrap();
@@ -45,11 +48,14 @@ fn process(input1: &str, input2: &str) -> i32 {
 }
 
 fn main() {
-    let input1 = include_str!("../../../day05/input1_1.txt");
-    let input2 = include_str!("../../../day05/input1_2.txt");
-    let distance = process(input1, input2);
-    println!("The result is {}", distance);
+    let input = include_str!("../../../day05/input1.txt");
+    let result = process(input);
+    println!("The result is {}", result);
 }
+
+// ----------------------------------------------------
+// -------------------- Unit Tests --------------------
+// ----------------------------------------------------
 
 #[cfg(test)]
 mod tests {
@@ -57,8 +63,7 @@ mod tests {
 
     #[test]
     fn test() {
-        let check1 = include_str!("../../../day05/check1_1.txt");
-        let check2 = include_str!("../../../day05/check1_2.txt");
-        assert_eq!(process(check1, check2), 143)
+        let check = include_str!("../../../day05/check1.txt");
+        assert_eq!(process(check), 143)
     }
 }
