@@ -27,12 +27,15 @@ fn process(input: &str) -> i32 {
     let input1 = input.split("\r\n\r\n").nth(0).unwrap();
     let input2 = input.split("\r\n\r\n").nth(1).unwrap();
 
-    let mut rules: Vec<Rule> = Vec::new();
-    for line in input1.lines() {
-        let left: i32 = line.split('|').nth(0).unwrap().parse().unwrap();
-        let right: i32 = line.split('|').nth(1).unwrap().parse().unwrap();
-        rules.push(Rule { left, right });
-    }
+    let rules: Vec<Rule> = input1
+        .lines()
+        .map(|line| {
+            let left: i32 = line.split('|').nth(0).unwrap().parse().unwrap();
+            let right: i32 = line.split('|').nth(1).unwrap().parse().unwrap();
+            Rule { left, right }
+        })
+        .collect();
+
     let mut manuals: Vec<Vec<i32>> = input2
         .lines()
         .map(|line| {
