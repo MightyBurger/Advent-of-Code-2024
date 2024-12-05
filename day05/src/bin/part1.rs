@@ -37,14 +37,11 @@ fn process(input: &str) -> i32 {
         })
         .collect();
 
-    let mut sum: i32 = 0;
-    for manual in manuals.iter() {
-        if follows_rules(manual, &rules) {
-            let middle = manual.len() / 2;
-            sum += manual[middle];
-        }
-    }
-    sum
+    manuals
+        .iter()
+        .filter(|manual| follows_rules(manual, &rules))
+        .map(|manual| manual[manual.len() / 2])
+        .sum()
 }
 
 fn main() {
