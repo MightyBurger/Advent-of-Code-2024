@@ -1,6 +1,6 @@
 fn process(input: &str) -> i32 {
     println!("{}", input);
-    22
+    11
 }
 
 fn main() {
@@ -19,7 +19,7 @@ mod tests {
 
     #[test]
     fn test() {
-        let check = include_str!("../../../day0x/check2.txt");
+        let check = include_str!("../../../dayxx/check2.txt");
         assert_eq!(process(check), 11)
     }
 }

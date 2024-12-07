@@ -4,7 +4,7 @@ fn process(input: &str) -> i32 {
 }
 
 fn main() {
-    let input = include_str!("../../../dayxx/input1.txt");
+    let input = include_str!("../../../day06/input2.txt");
     let distance = process(input);
     println!("The result is {}", distance);
 }
@@ -19,7 +19,7 @@ mod tests {
 
     #[test]
     fn test() {
-        let check = include_str!("../../../dayxx/check1.txt");
+        let check = include_str!("../../../day06/check2.txt");
         assert_eq!(process(check), 11)
     }
 }
