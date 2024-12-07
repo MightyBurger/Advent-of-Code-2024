@@ -231,28 +231,30 @@ impl Game {
         // Mark current position as explored.
         self.map.mark(guard.pos, guard.dir);
 
-        // The position the guard is facing
-        let facing = guard.pos + guard.dir.offset();
         // The tile the guard is facing
-        let facing = self.map.tile(facing);
+        let facing = self.map.tile(guard.pos + guard.dir.offset());
 
-        let next_dir = match facing {
-            Some(Tile::Obstacle) => guard.dir.turn(),
-            Some(Tile::Open(_)) | None => guard.dir,
-        };
-
-        let next_pos = guard.pos + next_dir.offset();
-
-        // Move the guard.
-        self.guard = match self.map.in_bounds(next_pos) {
-            true => Some(Guard {
-                pos: next_pos,
-                dir: next_dir,
-            }),
-            false => None,
-        };
-
-        UpdateResult::Undecided
+        // In every step, the guard either turns or moves.
+        match facing {
+            Some(Tile::Obstacle) => {
+                self.guard = Some(Guard {
+                    dir: guard.dir.turn(),
+                    ..guard
+                });
+                UpdateResult::Undecided
+            }
+            Some(Tile::Open(_)) => {
+                self.guard = Some(Guard {
+                    pos: guard.pos + guard.dir.offset(),
+                    ..guard
+                });
+                UpdateResult::Undecided
+            }
+            None => {
+                self.guard = None;
+                UpdateResult::GuardLeft
+            }
+        }
     }
 
     fn simulate(&mut self) -> (GameResult, i32) {
@@ -346,6 +348,27 @@ mod tests {
     fn test() {
         let check = include_str!("../../../day06/check.txt");
         assert_eq!(process(check), 6)
+    }
+
+    #[test]
+    fn michael_test() {
+        let test = r".##..
+....#
+.....
+.^.#.
+.....";
+        assert_eq!(process(test), 1);
+    }
+
+    #[test]
+    fn tight_corner_test() {
+        let test = r".....
+...#.
+....#
+.....
+...^.
+...#.";
+        assert_eq!(process(test), 1);
     }
 
     #[test]
