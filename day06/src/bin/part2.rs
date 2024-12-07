@@ -196,11 +196,6 @@ impl Game {
         Self::new(Map(map), guard)
     }
 
-    // Is the guard in-bounds?
-    fn guard_in(&self) -> bool {
-        self.guard.is_some()
-    }
-
     // Step the simulation forward one timestep.
     fn step(&mut self) -> UpdateResult {
         // There's only work to do if a guard is on the map.
@@ -270,6 +265,7 @@ impl Game {
         }
     }
 
+    #[allow(dead_code)]
     fn disp(&self) {
         for row in self.map.0.iter() {
             for tile in row.iter() {
