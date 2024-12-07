@@ -317,10 +317,6 @@ fn process(input: &str) -> i32 {
         .iter()
         .enumerate()
         .map(|(i, new_obst_pos)| {
-            println!(
-                "Testing game {:4}/{} with obstacle at {:?}",
-                i, total, new_obst_pos
-            );
             let mut newgame = start_game.clone();
             newgame.map.update(*new_obst_pos, Tile::Obstacle);
             let result = newgame.simulate();
