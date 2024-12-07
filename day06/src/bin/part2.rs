@@ -290,6 +290,7 @@ impl Game {
     }
 }
 
+use rayon::prelude::*;
 use std::collections::HashSet;
 
 fn process(input: &str) -> i32 {
@@ -314,13 +315,11 @@ fn process(input: &str) -> i32 {
 
     // Now, rerun the simulation again, placing obstacles wherever the guard visited.
     visited
-        .iter()
-        .enumerate()
-        .map(|(i, new_obst_pos)| {
+        .par_iter()
+        .map(|new_obst_pos| {
             let mut newgame = start_game.clone();
             newgame.map.update(*new_obst_pos, Tile::Obstacle);
-            let result = newgame.simulate();
-            result
+            newgame.simulate()
         })
         .filter(|(result, _)| matches!(result, GameResult::GuardLoop))
         .count() as i32
