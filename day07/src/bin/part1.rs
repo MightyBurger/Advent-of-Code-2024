@@ -3,6 +3,7 @@ struct Equation {
     test: i64,
     operands: Vec<i64>,
 }
+
 fn parse_input(input: &str) -> Vec<Equation> {
     input
         .lines()
@@ -40,6 +41,7 @@ fn valid(eq: &Equation) -> bool {
     }
     false
 }
+
 fn process(input: &str) -> i64 {
     let eqs = parse_input(input);
 
