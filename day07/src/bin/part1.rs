@@ -33,7 +33,6 @@ fn valid(eq: &Equation) -> bool {
                 .zip(eq.operands.iter().skip(1))
                 .fold(eq.operands[0], |acc, (f, num)| f(acc, *num))
         })
-    // [operators] to number
     {
         if number == eq.test {
             return true;
