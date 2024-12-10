@@ -1,15 +1,15 @@
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Equation {
-    test: i32,
-    operands: Vec<i32>,
+    test: i64,
+    operands: Vec<i64>,
 }
 fn parse_input(input: &str) -> Vec<Equation> {
     input
         .lines()
         .map(|line| {
             let mut split = line.split(":");
-            let test: i32 = split.next().unwrap().parse().unwrap();
-            let operands: Vec<i32> = split
+            let test: i64 = split.next().unwrap().parse().unwrap();
+            let operands: Vec<i64> = split
                 .next()
                 .unwrap()
                 .split_whitespace()
@@ -23,12 +23,11 @@ fn parse_input(input: &str) -> Vec<Equation> {
 use itertools::Itertools;
 fn valid(eq: &Equation) -> bool {
     let seq_len = eq.operands.len() - 1;
-    let operators = [|a: i32, b: i32| a + b, |a: i32, b: i32| a * b];
+    let operators = [|a: i64, b: i64| a + b, |a: i64, b: i64| a * b];
     for number in (0..seq_len)
         .map(|_| operators.iter())
         .multi_cartesian_product() // iterates over [+, +, +], [+, +, *], [+, *, +], etc.
         .map(|op_sequence| {
-            println!("=== Working on combo {:?} ===", &op_sequence);
             op_sequence
                 .iter()
                 .zip(eq.operands.iter().skip(1))
@@ -42,7 +41,7 @@ fn valid(eq: &Equation) -> bool {
     }
     false
 }
-fn process(input: &str) -> i32 {
+fn process(input: &str) -> i64 {
     let eqs = parse_input(input);
 
     eqs.iter().filter(|eq| valid(eq)).map(|eq| eq.test).sum()
