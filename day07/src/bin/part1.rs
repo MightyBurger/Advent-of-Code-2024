@@ -1,0 +1,100 @@
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct Equation {
+    test: i32,
+    operands: Vec<i32>,
+}
+fn parse_input(input: &str) -> Vec<Equation> {
+    input
+        .lines()
+        .map(|line| {
+            let mut split = line.split(":");
+            let test: i32 = split.next().unwrap().parse().unwrap();
+            let operands: Vec<i32> = split
+                .next()
+                .unwrap()
+                .split_whitespace()
+                .filter_map(|token| token.parse().ok())
+                .collect();
+            Equation { test, operands }
+        })
+        .collect()
+}
+
+use itertools::Itertools;
+fn valid(eq: &Equation) -> bool {
+    let seq_len = eq.operands.len() - 1;
+    let operators = [|a: i32, b: i32| a + b, |a: i32, b: i32| a * b];
+    for number in (0..seq_len)
+        .map(|_| operators.iter())
+        .multi_cartesian_product() // iterates over [+, +, +], [+, +, *], [+, *, +], etc.
+        .map(|op_sequence| {
+            println!("=== Working on combo {:?} ===", &op_sequence);
+            op_sequence
+                .iter()
+                .zip(eq.operands.iter().skip(1))
+                .fold(eq.operands[0], |acc, (f, num)| f(acc, *num))
+        })
+    // [operators] to number
+    {
+        if number == eq.test {
+            return true;
+        }
+    }
+    false
+}
+fn process(input: &str) -> i32 {
+    let eqs = parse_input(input);
+
+    eqs.iter().filter(|eq| valid(eq)).map(|eq| eq.test).sum()
+}
+
+fn main() {
+    let input = include_str!("../../../day07/input1.txt");
+    let distance = process(input);
+    println!("The result is {}", distance);
+}
+
+// ----------------------------------------------------
+// -------------------- Unit Tests --------------------
+// ----------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test() {
+        let check = include_str!("../../../day07/check1.txt");
+        assert_eq!(process(check), 3749)
+    }
+
+    #[test]
+    fn parsetest() {
+        let check = r"1: 2 3 4
+5: 6 7";
+        assert_eq!(
+            parse_input(check),
+            vec![
+                Equation {
+                    test: 1,
+                    operands: vec!(2, 3, 4)
+                },
+                Equation {
+                    test: 5,
+                    operands: vec!(6, 7)
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn validtest() {
+        assert_eq!(
+            valid(&Equation {
+                test: 182, // 4*5+6*7
+                operands: vec![4, 5, 6, 7],
+            }),
+            true
+        );
+    }
+}
