@@ -30,7 +30,7 @@ fn valid(eq: &Equation) -> bool {
     ];
     for number in (0..seq_len)
         .map(|_| operators.iter())
-        .multi_cartesian_product() // iterates over [+, +, +], [+, +, *], [+, *, +], etc.
+        .multi_cartesian_product() // iterates over [+, +, +], [+, +, *], [+, +, ||], [+, *, +] etc.
         .map(|op_sequence| {
             op_sequence
                 .iter()
