@@ -26,11 +26,6 @@ impl Sub for Pos {
 }
 
 use itertools::Itertools;
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct Tower {
-    freq: char,
-    pos: Pos,
-}
 use std::collections::HashSet;
 fn process(input: &str) -> i32 {
     let frequencies: HashSet<char> = input.chars().filter(|c| c.is_alphanumeric()).collect();
