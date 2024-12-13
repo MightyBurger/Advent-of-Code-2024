@@ -1,3 +1,11 @@
+use std::collections::HashMap;
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct ComputationParams {
+    step: u32,
+    stone: u64,
+}
+type DpMemo = HashMap<ComputationParams, u64>;
+
 fn split_in_half(stone: u64) -> (u64, u64) {
     let div = identify_number_of_digits(stone) / 2; // expected to be divisible by 2
     let div = u32::pow(10, div) as u64;
@@ -13,29 +21,35 @@ fn identify_number_of_digits(stone: u64) -> u32 {
 }
 
 // returns how many stones this stone split into
-fn stoned_out_man(steps: i32, stone: u64) -> u64 {
-    if steps == 0 {
+fn stoned_out_man(step: u32, stone: u64, dp: &mut DpMemo) -> u64 {
+    let params = ComputationParams { step, stone };
+    if let Some(result) = dp.get(&params) {
+        return *result;
+    }
+    if step == 0 {
         1
     } else {
-        if stone == 0 {
-            stoned_out_man(steps - 1, 1)
+        let result = if stone == 0 {
+            stoned_out_man(step - 1, 1, dp)
         } else if identify_number_of_digits(stone) % 2 == 0 {
             let (left, right) = split_in_half(stone);
-            stoned_out_man(steps - 1, left) + stoned_out_man(steps - 1, right)
+            stoned_out_man(step - 1, left, dp) + stoned_out_man(step - 1, right, dp)
         } else {
-            stoned_out_man(steps - 1, stone * 2024)
-        }
+            stoned_out_man(step - 1, stone * 2024, dp)
+        };
+        dp.insert(params, result);
+        result
     }
 }
 
-fn process(input: &str, iterations: i32) -> u64 {
+fn process(input: &str, iterations: u32) -> u64 {
     let stones: Vec<u64> = input
         .split_whitespace()
         .map(|s| s.parse().unwrap())
         .collect();
     stones
         .into_iter()
-        .map(|stone| stoned_out_man(iterations, stone))
+        .map(|stone| stoned_out_man(iterations, stone, &mut HashMap::new()))
         .sum()
 }
 
