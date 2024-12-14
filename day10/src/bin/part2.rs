@@ -25,7 +25,6 @@ impl Sub for Pos {
     }
 }
 
-use std::collections::HashSet;
 fn explore(grid: &Vec<Vec<u32>>, pos: Pos, score: &mut i32) {
     let this_num = grid[pos.col as usize][pos.row as usize];
     if this_num == 9 {

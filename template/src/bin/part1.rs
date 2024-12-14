@@ -4,8 +4,8 @@ fn process(input: &str) -> i32 {
 
 fn main() {
     let input = include_str!("../../../dayxx/input1.txt");
-    let distance = process(input);
-    println!("The result is {}", distance);
+    let result = process(input);
+    println!("The result is {}", result);
 }
 
 // ----------------------------------------------------
