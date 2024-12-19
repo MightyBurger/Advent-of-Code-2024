@@ -99,18 +99,23 @@ fn process(program: &Vec<u8>) -> i64 {
 
     for i in (0..power).rev() {
         'find_coeff: loop {
-            println!("trying {}", coefficients[i]);
             let a = coeff_to_a(&coefficients);
             let result = run(a, program);
-            if result[i] == program[i] as i64 {
+            let mut matches = true;
+            for k in i..power {
+                if result[k] != program[k] as i64 {
+                    matches = false;
+                }
+            }
+            if matches {
                 break 'find_coeff;
             }
             coefficients[i] = coefficients[i] + 1;
         }
         println!("Determined c{i} to be {}", coefficients[i]);
-        println!("{:?}", program);
-        println!("{:?}", run(coeff_to_a(&coefficients), program));
-        print!(" ");
+        println!("Targeting: {:?}", program);
+        println!("   So far: {:?}", run(coeff_to_a(&coefficients), program));
+        print!("            ");
         for _ in 0..(3 * i) {
             print!(" ");
         }
