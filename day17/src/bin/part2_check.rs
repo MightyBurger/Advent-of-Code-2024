@@ -1,4 +1,4 @@
-struct ProgramParams {
+struct Input {
     rega: i64,
     regb: i64,
     regc: i64,
@@ -18,9 +18,11 @@ fn combo(num: u8, a: i64, b: i64, c: i64) -> i64 {
     }
 }
 
-fn run(mut a: i64, program: &Vec<u8>) -> Vec<i64> {
-    let mut b = 0;
-    let mut c = 0;
+fn process(input: Input) -> String {
+    let mut a = input.rega;
+    let mut b = input.regb;
+    let mut c = input.regc;
+    let program = input.program;
     let mut ip = 0;
 
     let mut output: Vec<i64> = Vec::new();
@@ -77,68 +79,31 @@ fn run(mut a: i64, program: &Vec<u8>) -> Vec<i64> {
         }
     }
 
-    output
-}
+    let too_long = output
+        .iter()
+        .map(|num| format!("{num},"))
+        .collect::<String>();
+    let mut iter = too_long.chars();
 
-fn coeff_to_a(coefficients: &Vec<i64>) -> i64 {
-    let mut sum = 0;
+    iter.next_back();
 
-    for (i, coeff) in coefficients.iter().enumerate() {
-        sum += 8i64.pow(i as u32) * coeff;
-    }
-
-    sum
-}
-
-fn process(program: &Vec<u8>) -> i64 {
-    let power = program.len();
-    let mut coefficients: Vec<i64> = vec![0; power];
-    coefficients[power - 1] = 1;
-
-    dbg!(power);
-
-    for i in (0..power).rev() {
-        'find_coeff: loop {
-            println!("trying {}", coefficients[i]);
-            let a = coeff_to_a(&coefficients);
-            let result = run(a, program);
-            if result[i] == program[i] as i64 {
-                break 'find_coeff;
-            }
-            coefficients[i] = coefficients[i] + 1;
-        }
-        println!("Determined c{i} to be {}", coefficients[i]);
-        println!("{:?}", program);
-        println!("{:?}", run(coeff_to_a(&coefficients), program));
-        print!(" ");
-        for _ in 0..(3 * i) {
-            print!(" ");
-        }
-        println!("^");
-    }
-
-    coeff_to_a(&coefficients)
+    iter.collect()
 }
 
 fn main() {
-    let program = vec![2, 4, 1, 5, 7, 5, 1, 6, 4, 2, 5, 5, 0, 3, 3, 0];
-    let result = process(&program);
+    let user_in: i64 = std::env::args().nth(1).unwrap().parse().unwrap();
+    let input = Input {
+        rega: user_in,
+        regb: 0,
+        regc: 0,
+        program: vec![2, 4, 1, 5, 7, 5, 1, 6, 4, 2, 5, 5, 0, 3, 3, 0],
+    };
+    let result = process(input);
     println!("The result is {}", result);
-}
-
-// ----------------------------------------------------
-// -------------------- Unit Tests --------------------
-// ----------------------------------------------------
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test() {
-        let program = vec![0, 1, 5, 4, 3, 0];
-        let result = process(&program);
-        dbg!(&result);
-        assert_eq!(result, 117440);
+    println!("It should be  {}", "2,4,1,5,7,5,1,6,4,2,5,5,0,3,3,0");
+    if result == String::from("2,4,1,5,7,5,1,6,4,2,5,5,0,3,3,0") {
+        println!("SUCCESS!! {}", user_in);
+    } else {
+        println!("Not quite.");
     }
 }
