@@ -1,17 +1,27 @@
-fn can_make_work(towels: &[&str], pattern: &str) -> bool {
+use std::collections::HashMap;
+fn can_make_work<'a>(
+    towels: &[&str],
+    pattern: &'a str,
+    cache: &mut HashMap<&'a str, bool>,
+) -> bool {
+    if let Some(result) = cache.get(pattern) {
+        return *result;
+    }
+    let mut result = false;
     for towel in towels.into_iter() {
         if pattern.len() < towel.len() {
             continue;
         } else if *towel == pattern {
-            return true;
+            result = true;
         } else if *towel == &pattern[0..towel.len()] && pattern.len() > towel.len() {
             let remaining_pattern = &pattern[towel.len()..];
-            if can_make_work(towels, remaining_pattern) {
-                return true;
+            if can_make_work(towels, remaining_pattern, cache) {
+                result = true;
             }
         }
     }
-    false
+    cache.insert(pattern, result);
+    result
 }
 
 fn process(input: &str) -> i32 {
@@ -21,7 +31,7 @@ fn process(input: &str) -> i32 {
     input2
         .lines()
         .filter(|pattern| pattern.len() > 0)
-        .filter(|pattern| can_make_work(&towels, pattern))
+        .filter(|pattern| can_make_work(&towels, pattern, &mut HashMap::new()))
         .count() as i32
 }
 
