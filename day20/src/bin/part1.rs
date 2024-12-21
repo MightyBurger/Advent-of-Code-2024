@@ -84,18 +84,22 @@ struct Node {
 }
 
 // From a node, find all the next available nodes
-fn next(walls: &HashSet<Vec2>, from: &Node, cheat: Option<&(Vec2, Vec2)>) -> Vec<(Node, i32)> {
+fn next(
+    walls: &HashSet<Vec2>,
+    from: &Node,
+    cheat: Option<&(Vec2, Vec2)>,
+    cols: i32,
+    rows: i32,
+) -> Vec<(Node, i32)> {
     let mut next = Vec::new();
 
     // Direct move
     for offset in Vec2::offsets4() {
-        if !walls.contains(&(from.pos + offset)) {
-            next.push((
-                Node {
-                    pos: from.pos + offset,
-                },
-                1,
-            ));
+        let nextpos = from.pos + offset;
+        if !walls.contains(&nextpos) {
+            if (0..cols).contains(&nextpos.col) && (0..rows).contains(&nextpos.row) {
+                next.push((Node { pos: nextpos }, 1));
+            }
         }
     }
 
@@ -116,6 +120,9 @@ fn process(input: &str, must_be_better_than_by: i32) -> i32 {
     let mut start: Vec2 = Vec2::default();
     let mut end: Vec2 = Vec2::default();
 
+    let rows = input.lines().count() as i32;
+    let cols = input.lines().nth(0).unwrap().chars().count() as i32;
+
     for (row, line) in input.lines().enumerate() {
         for (col, c) in line.chars().enumerate() {
             let pos = Vec2::new(col as i32, row as i32);
@@ -129,19 +136,17 @@ fn process(input: &str, must_be_better_than_by: i32) -> i32 {
             }
         }
     }
-    println!("Here");
     let (_, no_cheat_cost) = dijkstra(
         &Node { pos: start },
-        |node| next(&walls, node, None),
+        |node| next(&walls, node, None, cols, rows),
         |node| node.pos == end,
     )
     .unwrap();
-    println!("No cheat cost is {no_cheat_cost}");
 
     let mut cheats: HashSet<(Vec2, Vec2)> = HashSet::new();
 
-    for (row, line) in input.lines().enumerate() {
-        for (col, _) in line.chars().enumerate() {
+    for row in 0..rows {
+        for col in 0..cols {
             for offset in Vec2::offsets4() {
                 let cheat_start = Vec2::new(col as i32, row as i32);
                 let cheat_end = cheat_start + offset;
@@ -152,28 +157,21 @@ fn process(input: &str, must_be_better_than_by: i32) -> i32 {
         }
     }
 
-    use std::io;
-    use std::io::Write;
+    println!("Found {} possible cheats. Testing each...", cheats.len());
+
+    let bar = indicatif::ProgressBar::new(cheats.len() as u64);
+
     cheats
         .iter()
         .filter(|cheat| {
-            print!(
-                "Testing with a cheat from {:?} to {:?}...",
-                &cheat.0, &cheat.1
-            );
-            io::stdout().flush().unwrap();
+            bar.inc(1);
             let (_, cheat_cost) = dijkstra(
                 &Node { pos: start },
-                |node| next(&walls, node, Some(cheat)),
+                |node| next(&walls, node, Some(cheat), cols, rows),
                 |node| node.pos == end,
             )
             .unwrap();
-            let result = cheat_cost <= no_cheat_cost - must_be_better_than_by;
-            match result {
-                false => println!("Not better."),
-                true => println!("Better!"),
-            }
-            result
+            cheat_cost <= no_cheat_cost - must_be_better_than_by
         })
         .count() as i32
 }
