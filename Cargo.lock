@@ -146,6 +146,13 @@ name = "day19"
 version = "0.1.0"
 
 [[package]]
+name = "day20"
+version = "0.1.0"
+dependencies = [
+ "pathfinding",
+]
+
+[[package]]
 name = "dayxx"
 version = "0.1.0"
 dependencies = [
