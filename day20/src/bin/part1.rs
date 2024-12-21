@@ -81,7 +81,6 @@ use std::collections::HashSet;
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 struct Node {
     pos: Vec2,
-    cut: bool,
 }
 
 // From a node, find all the next available nodes
@@ -94,7 +93,6 @@ fn next(walls: &HashSet<Vec2>, from: &Node, cheat: Option<&(Vec2, Vec2)>) -> Vec
             next.push((
                 Node {
                     pos: from.pos + offset,
-                    cut: from.cut,
                 },
                 1,
             ));
@@ -103,17 +101,9 @@ fn next(walls: &HashSet<Vec2>, from: &Node, cheat: Option<&(Vec2, Vec2)>) -> Vec
 
     // Shortcut
     if let Some((cheat_start, cheat_end)) = cheat {
-        if from.cut == false {
-            for offset in Vec2::offsets4() {
-                if from.pos + offset == *cheat_start {
-                    next.push((
-                        Node {
-                            pos: *cheat_end,
-                            cut: true,
-                        },
-                        2,
-                    ));
-                }
+        for offset in Vec2::offsets4() {
+            if from.pos + offset == *cheat_start {
+                next.push((Node { pos: *cheat_end }, 2));
             }
         }
     }
@@ -141,10 +131,7 @@ fn process(input: &str, must_be_better_than_by: i32) -> i32 {
     }
     println!("Here");
     let (_, no_cheat_cost) = dijkstra(
-        &Node {
-            pos: start,
-            cut: true,
-        },
+        &Node { pos: start },
         |node| next(&walls, node, None),
         |node| node.pos == end,
     )
@@ -165,19 +152,28 @@ fn process(input: &str, must_be_better_than_by: i32) -> i32 {
         }
     }
 
+    use std::io;
+    use std::io::Write;
     cheats
         .iter()
         .filter(|cheat| {
+            print!(
+                "Testing with a cheat from {:?} to {:?}...",
+                &cheat.0, &cheat.1
+            );
+            io::stdout().flush().unwrap();
             let (_, cheat_cost) = dijkstra(
-                &Node {
-                    pos: start,
-                    cut: false,
-                },
+                &Node { pos: start },
                 |node| next(&walls, node, Some(cheat)),
                 |node| node.pos == end,
             )
             .unwrap();
-            cheat_cost <= no_cheat_cost - must_be_better_than_by
+            let result = cheat_cost <= no_cheat_cost - must_be_better_than_by;
+            match result {
+                false => println!("Not better."),
+                true => println!("Better!"),
+            }
+            result
         })
         .count() as i32
 }
