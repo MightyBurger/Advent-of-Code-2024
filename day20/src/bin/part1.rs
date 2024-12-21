@@ -115,6 +115,8 @@ fn next(
     next
 }
 
+use rayon::prelude::*;
+
 fn process(input: &str, must_be_better_than_by: i32) -> i32 {
     let mut walls: HashSet<Vec2> = HashSet::new();
     let mut start: Vec2 = Vec2::default();
@@ -162,7 +164,7 @@ fn process(input: &str, must_be_better_than_by: i32) -> i32 {
     let bar = indicatif::ProgressBar::new(cheats.len() as u64);
 
     cheats
-        .iter()
+        .par_iter()
         .filter(|cheat| {
             bar.inc(1);
             let (_, cheat_cost) = dijkstra(
