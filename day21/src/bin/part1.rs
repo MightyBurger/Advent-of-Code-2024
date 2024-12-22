@@ -4,7 +4,6 @@
 // -----------------------------------------------------------------------------------
 // Vec2 boilerplate (copying and pasting until I bother with putting this in a module)
 // -----------------------------------------------------------------------------------
-
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct Vec2 {
     col: i32,
@@ -92,22 +91,24 @@ trait Button {
                 current_pos.col -= 1;
                 path.push(DpadBtn::Left);
             }
-            // Prefer down next.
+            // Then down.
             else if dest.row > current_pos.row && current_pos + Vec2::new(0, 1) != Self::NULLSPACE
             {
                 current_pos.row += 1;
                 path.push(DpadBtn::Down);
             }
-            // Prefer either up or right; shouldn't matter.
-            else if dest.col > current_pos.col && current_pos + Vec2::new(1, 0) != Self::NULLSPACE
-            {
-                current_pos.col += 1;
-                path.push(DpadBtn::Right);
-            } else if dest.row < current_pos.row
+            // Then up.
+            else if dest.row < current_pos.row
                 && current_pos + Vec2::new(0, -1) != Self::NULLSPACE
             {
                 current_pos.row -= 1;
                 path.push(DpadBtn::Up);
+            }
+            // Then right.
+            else if dest.col > current_pos.col && current_pos + Vec2::new(1, 0) != Self::NULLSPACE
+            {
+                current_pos.col += 1;
+                path.push(DpadBtn::Right);
             }
         }
         path.push(DpadBtn::A);
@@ -199,7 +200,7 @@ enum DpadBtn {
 }
 
 impl Button for DpadBtn {
-    const NULLSPACE: Vec2 = Vec2 { col: 0, row: 3 };
+    const NULLSPACE: Vec2 = Vec2 { col: 0, row: 0 };
     fn pos(&self) -> Vec2 {
         match self {
             Self::A => Vec2 { col: 2, row: 0 },
@@ -223,42 +224,6 @@ impl Button for DpadBtn {
     fn apos() -> Vec2 {
         Self::A.pos()
     }
-    // fn optimal_path_dpad(&self, from: Vec2) -> impl Iterator<Item = DpadBtn> {
-    //     let from = Self::from_pos(from);
-    //     use DpadBtn::*;
-    //     let path = match (from, self) {
-    //         (A, A) => vec![A],
-    //         (A, Up) => vec![Left, A],
-    //         (A, Left) => vec![Left, Down, Left, A],
-    //         (A, Down) => vec![Left, Down, A],
-    //         (A, Right) => vec![Down, A],
-    //
-    //         (Up, A) => vec![Right, A],
-    //         (Up, Up) => vec![A],
-    //         (Up, Left) => vec![Down, Left, A],
-    //         (Up, Down) => vec![Down, A],
-    //         (Up, Right) => vec![Down, Right, A],
-    //
-    //         (Left, A) => vec![Right, Right, Up, A],
-    //         (Left, Up) => vec![Right, Up, A],
-    //         (Left, Left) => vec![A],
-    //         (Left, Down) => vec![Right, A],
-    //         (Left, Right) => vec![Right, Right, A],
-    //
-    //         (Down, A) => vec![Right, Up, A],
-    //         (Down, Up) => vec![Up, A],
-    //         (Down, Left) => vec![Left, A],
-    //         (Down, Down) => vec![A],
-    //         (Down, Right) => vec![Right, A],
-    //
-    //         (Right, A) => vec![Up, A],
-    //         (Right, Up) => vec![Left, Up, A],
-    //         (Right, Left) => vec![Left, Left, A],
-    //         (Right, Down) => vec![Left, A],
-    //         (Right, Right) => vec![A],
-    //     };
-    //     path.into_iter()
-    // }
 }
 
 impl TryFrom<char> for DpadBtn {
