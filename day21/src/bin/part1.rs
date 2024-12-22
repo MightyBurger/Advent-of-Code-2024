@@ -177,7 +177,6 @@ fn det_cost(
     let mut moves = Vec::new();
 
     for btn in buttons {
-        dbg!(&btn);
         while btn.pos().col > pos.col {
             pos.col += 1;
             moves.push(DpadBtn::Right);
@@ -197,17 +196,28 @@ fn det_cost(
         moves.push(DpadBtn::A);
     }
 
-    dbg!(&moves);
+    //dbg!(&moves);
+    for m in moves.iter() {
+        match m {
+            DpadBtn::A => print!("A"),
+            DpadBtn::Up => print!("^"),
+            DpadBtn::Left => print!("<"),
+            DpadBtn::Down => print!("v"),
+            DpadBtn::Right => print!(">"),
+        }
+    }
+    println!();
 
     if indirections == 0 {
         moves.len() as i32
     } else {
+        // moves.len() as i32 + det_cost(DpadBtn::A.pos(), indirections - 1, moves)
         det_cost(DpadBtn::A.pos(), indirections - 1, moves)
     }
 }
 
 fn process(input: &str) -> i32 {
-    let indirections = 1;
+    let indirections = 2;
     input
         .lines()
         .filter(|line| line.len() > 0)
@@ -220,7 +230,11 @@ fn process(input: &str) -> i32 {
                 .collect();
             println!("Determining the cost of {:?}", buttons);
             let presses = det_cost(KeypadBtn::A.pos(), indirections, buttons.into_iter());
+            println!("==================================================================");
+            println!("Above calculation was for: {line}");
             println!("Presses required: {presses}");
+            println!("Numeric part of the code: {num}");
+            println!("Complexity: {}", presses * num);
             presses * num
         })
         .sum()
