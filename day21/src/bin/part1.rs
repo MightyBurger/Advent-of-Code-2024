@@ -75,6 +75,10 @@ impl Mul<i32> for Vec2 {
 // Code for today's puzzle
 // -----------------------------------------------------------------------------------
 
+trait Button {
+    fn pos(&self) -> Vec2;
+}
+
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 enum KeypadBtn {
     A,
@@ -90,7 +94,7 @@ enum KeypadBtn {
     N9,
 }
 
-impl KeypadBtn {
+impl Button for KeypadBtn {
     fn pos(&self) -> Vec2 {
         match self {
             Self::A => Vec2 { col: 2, row: 3 },
@@ -137,7 +141,7 @@ enum DpadBtn {
     Right,
 }
 
-impl DpadBtn {
+impl Button for DpadBtn {
     fn pos(&self) -> Vec2 {
         match self {
             Self::A => Vec2 { col: 2, row: 0 },
@@ -163,50 +167,62 @@ impl TryFrom<char> for DpadBtn {
     }
 }
 
-// Given a starting position and a button the ROBOT must press,
-// generate a sequence of buttons YOU (or a different controlling robot) must press.
-fn move_schedule(pos: &mut Vec2, btn: Vec2) -> impl Iterator<Item = DpadBtn> {
+// Generate the moves necessary to cause the controlled robot to press a sequence of buttons ending
+// in A. The resulting move seequence will end in an A.
+fn det_cost(
+    mut pos: Vec2,
+    indirections: i32,
+    buttons: impl IntoIterator<Item = impl Button + std::fmt::Debug>,
+) -> i32 {
     let mut moves = Vec::new();
 
-    while btn.col > pos.col {
-        pos.col += 1;
-        moves.push(DpadBtn::Right);
-    }
-    while btn.col < pos.col {
-        pos.col -= 1;
-        moves.push(DpadBtn::Left);
-    }
-    while btn.row > pos.row {
-        pos.row += 1;
-        moves.push(DpadBtn::Down);
-    }
-    while btn.row < pos.row {
-        pos.row -= 1;
-        moves.push(DpadBtn::Up);
-    }
-    moves.push(DpadBtn::A);
-
-    moves.into_iter()
-}
-
-fn code_complexity(code: impl IntoIterator<Item = KeypadBtn>) -> i32 {
-    println!("FINDING THE COMPLEXITY OF A CODE");
-    let mut robot_hand = KeypadBtn::A.pos();
-    let mut cost = 0;
-    for btn in code {
-        for dpad_btn_1 in move_schedule(&mut robot_hand, btn.pos()) {
-            dbg!(dpad_btn_1);
-            cost += 1;
+    for btn in buttons {
+        dbg!(&btn);
+        while btn.pos().col > pos.col {
+            pos.col += 1;
+            moves.push(DpadBtn::Right);
         }
+        while btn.pos().col < pos.col {
+            pos.col -= 1;
+            moves.push(DpadBtn::Left);
+        }
+        while btn.pos().row > pos.row {
+            pos.row += 1;
+            moves.push(DpadBtn::Down);
+        }
+        while btn.pos().row < pos.row {
+            pos.row -= 1;
+            moves.push(DpadBtn::Up);
+        }
+        moves.push(DpadBtn::A);
     }
-    cost
+
+    dbg!(&moves);
+
+    if indirections == 0 {
+        moves.len() as i32
+    } else {
+        det_cost(DpadBtn::A.pos(), indirections - 1, moves)
+    }
 }
 
 fn process(input: &str) -> i32 {
+    let indirections = 1;
     input
         .lines()
         .filter(|line| line.len() > 0)
-        .map(|line| code_complexity(line.chars().filter_map(|char| char.try_into().ok())))
+        .map(|line| {
+            let numstr: String = line.chars().filter(|c| c.is_numeric()).collect();
+            let num: i32 = numstr.parse().unwrap();
+            let buttons: Vec<KeypadBtn> = line
+                .chars()
+                .filter_map(|char| char.try_into().ok())
+                .collect();
+            println!("Determining the cost of {:?}", buttons);
+            let presses = det_cost(KeypadBtn::A.pos(), indirections, buttons.into_iter());
+            println!("Presses required: {presses}");
+            presses * num
+        })
         .sum()
 }
 
@@ -227,6 +243,6 @@ mod tests {
     #[test]
     fn test() {
         let check = include_str!("../../../day21/check1.txt");
-        assert_eq!(process(check), 11)
+        assert_eq!(process(check), 126384)
     }
 }
