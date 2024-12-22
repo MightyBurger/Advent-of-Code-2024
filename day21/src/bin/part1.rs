@@ -76,7 +76,43 @@ impl Mul<i32> for Vec2 {
 // -----------------------------------------------------------------------------------
 
 trait Button {
+    const NULLSPACE: Vec2;
     fn pos(&self) -> Vec2;
+    fn from_pos(pos: Vec2) -> Self;
+    fn apos() -> Vec2;
+    fn optimal_path_dpad(&self, from: Vec2) -> impl Iterator<Item = DpadBtn> {
+        let dest = self.pos();
+
+        let mut current_pos = from;
+        let mut path: Vec<DpadBtn> = Vec::new();
+
+        while current_pos != dest {
+            // Prefer left first.
+            if dest.col < current_pos.col && current_pos + Vec2::new(-1, 0) != Self::NULLSPACE {
+                current_pos.col -= 1;
+                path.push(DpadBtn::Left);
+            }
+            // Prefer down next.
+            else if dest.row > current_pos.row && current_pos + Vec2::new(0, 1) != Self::NULLSPACE
+            {
+                current_pos.row += 1;
+                path.push(DpadBtn::Down);
+            }
+            // Prefer either up or right; shouldn't matter.
+            else if dest.col > current_pos.col && current_pos + Vec2::new(1, 0) != Self::NULLSPACE
+            {
+                current_pos.col += 1;
+                path.push(DpadBtn::Right);
+            } else if dest.row < current_pos.row
+                && current_pos + Vec2::new(0, -1) != Self::NULLSPACE
+            {
+                current_pos.row -= 1;
+                path.push(DpadBtn::Up);
+            }
+        }
+        path.push(DpadBtn::A);
+        path.into_iter()
+    }
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -95,6 +131,7 @@ enum KeypadBtn {
 }
 
 impl Button for KeypadBtn {
+    const NULLSPACE: Vec2 = Vec2 { col: 0, row: 3 };
     fn pos(&self) -> Vec2 {
         match self {
             Self::A => Vec2 { col: 2, row: 3 },
@@ -109,6 +146,26 @@ impl Button for KeypadBtn {
             Self::N8 => Vec2 { col: 1, row: 0 },
             Self::N9 => Vec2 { col: 2, row: 0 },
         }
+    }
+    fn from_pos(pos: Vec2) -> Self {
+        use KeypadBtn::*;
+        match (pos.col, pos.row) {
+            (2, 3) => A,
+            (1, 3) => N0,
+            (0, 2) => N1,
+            (1, 2) => N2,
+            (2, 2) => N3,
+            (0, 1) => N4,
+            (1, 1) => N5,
+            (2, 1) => N6,
+            (0, 0) => N7,
+            (1, 0) => N8,
+            (2, 0) => N9,
+            _ => panic!("???"),
+        }
+    }
+    fn apos() -> Vec2 {
+        Self::A.pos()
     }
 }
 
@@ -142,6 +199,7 @@ enum DpadBtn {
 }
 
 impl Button for DpadBtn {
+    const NULLSPACE: Vec2 = Vec2 { col: 0, row: 3 };
     fn pos(&self) -> Vec2 {
         match self {
             Self::A => Vec2 { col: 2, row: 0 },
@@ -151,6 +209,56 @@ impl Button for DpadBtn {
             Self::Right => Vec2 { col: 2, row: 1 },
         }
     }
+    fn from_pos(pos: Vec2) -> Self {
+        use DpadBtn::*;
+        match (pos.col, pos.row) {
+            (2, 0) => A,
+            (1, 0) => Up,
+            (0, 1) => Left,
+            (1, 1) => Down,
+            (2, 1) => Right,
+            _ => panic!("???"),
+        }
+    }
+    fn apos() -> Vec2 {
+        Self::A.pos()
+    }
+    // fn optimal_path_dpad(&self, from: Vec2) -> impl Iterator<Item = DpadBtn> {
+    //     let from = Self::from_pos(from);
+    //     use DpadBtn::*;
+    //     let path = match (from, self) {
+    //         (A, A) => vec![A],
+    //         (A, Up) => vec![Left, A],
+    //         (A, Left) => vec![Left, Down, Left, A],
+    //         (A, Down) => vec![Left, Down, A],
+    //         (A, Right) => vec![Down, A],
+    //
+    //         (Up, A) => vec![Right, A],
+    //         (Up, Up) => vec![A],
+    //         (Up, Left) => vec![Down, Left, A],
+    //         (Up, Down) => vec![Down, A],
+    //         (Up, Right) => vec![Down, Right, A],
+    //
+    //         (Left, A) => vec![Right, Right, Up, A],
+    //         (Left, Up) => vec![Right, Up, A],
+    //         (Left, Left) => vec![A],
+    //         (Left, Down) => vec![Right, A],
+    //         (Left, Right) => vec![Right, Right, A],
+    //
+    //         (Down, A) => vec![Right, Up, A],
+    //         (Down, Up) => vec![Up, A],
+    //         (Down, Left) => vec![Left, A],
+    //         (Down, Down) => vec![A],
+    //         (Down, Right) => vec![Right, A],
+    //
+    //         (Right, A) => vec![Up, A],
+    //         (Right, Up) => vec![Left, Up, A],
+    //         (Right, Left) => vec![Left, Left, A],
+    //         (Right, Down) => vec![Left, A],
+    //         (Right, Right) => vec![A],
+    //     };
+    //     path.into_iter()
+    // }
 }
 
 impl TryFrom<char> for DpadBtn {
@@ -167,68 +275,30 @@ impl TryFrom<char> for DpadBtn {
     }
 }
 
+enum PadType {
+    Keypad,
+    Dpad,
+}
 // Generate the moves necessary to cause the controlled robot to press a sequence of buttons ending
 // in A. The resulting move seequence will end in an A.
 fn det_cost(
-    mut pos: Vec2,
-    row_with_void: i32,
+    tp: PadType,
     indirections: i32,
     buttons: impl IntoIterator<Item = impl Button + std::fmt::Debug>,
 ) -> i32 {
     let mut moves = Vec::new();
 
-    enum Order {
-        HorizFirst,
-        VertFirst,
-    }
+    let mut pos = match tp {
+        PadType::Keypad => <KeypadBtn as Button>::apos(),
+        PadType::Dpad => <DpadBtn as Button>::apos(),
+    };
+    dbg!(&pos);
 
     for btn in buttons {
-        let order = if row_with_void == btn.pos().row {
-            Order::HorizFirst
-        } else {
-            Order::VertFirst
-        };
-
-        match order {
-            Order::HorizFirst => {
-                while btn.pos().col > pos.col {
-                    pos.col += 1;
-                    moves.push(DpadBtn::Right);
-                }
-                while btn.pos().col < pos.col {
-                    pos.col -= 1;
-                    moves.push(DpadBtn::Left);
-                }
-                while btn.pos().row > pos.row {
-                    pos.row += 1;
-                    moves.push(DpadBtn::Down);
-                }
-                while btn.pos().row < pos.row {
-                    pos.row -= 1;
-                    moves.push(DpadBtn::Up);
-                }
-            }
-            Order::VertFirst => {
-                while btn.pos().row > pos.row {
-                    pos.row += 1;
-                    moves.push(DpadBtn::Down);
-                }
-                while btn.pos().row < pos.row {
-                    pos.row -= 1;
-                    moves.push(DpadBtn::Up);
-                }
-                while btn.pos().col > pos.col {
-                    pos.col += 1;
-                    moves.push(DpadBtn::Right);
-                }
-                while btn.pos().col < pos.col {
-                    pos.col -= 1;
-                    moves.push(DpadBtn::Left);
-                }
-            }
+        for step in btn.optimal_path_dpad(pos) {
+            moves.push(step);
         }
-
-        moves.push(DpadBtn::A);
+        pos = btn.pos();
     }
 
     //dbg!(&moves);
@@ -247,7 +317,7 @@ fn det_cost(
         moves.len() as i32
     } else {
         // moves.len() as i32 + det_cost(DpadBtn::A.pos(), indirections - 1, moves)
-        det_cost(DpadBtn::A.pos(), 1, indirections - 1, moves)
+        det_cost(PadType::Dpad, indirections - 1, moves)
     }
 }
 
@@ -264,7 +334,7 @@ fn process(input: &str) -> i32 {
                 .filter_map(|char| char.try_into().ok())
                 .collect();
             println!("Determining the cost of {:?}", buttons);
-            let presses = det_cost(KeypadBtn::A.pos(), 0, indirections, buttons.into_iter());
+            let presses = det_cost(PadType::Keypad, indirections, buttons.into_iter());
             println!("==================================================================");
             println!("Above calculation was for: {line}");
             println!("Presses required: {presses}");
