@@ -171,28 +171,63 @@ impl TryFrom<char> for DpadBtn {
 // in A. The resulting move seequence will end in an A.
 fn det_cost(
     mut pos: Vec2,
+    row_with_void: i32,
     indirections: i32,
     buttons: impl IntoIterator<Item = impl Button + std::fmt::Debug>,
 ) -> i32 {
     let mut moves = Vec::new();
 
+    enum Order {
+        HorizFirst,
+        VertFirst,
+    }
+
     for btn in buttons {
-        while btn.pos().col > pos.col {
-            pos.col += 1;
-            moves.push(DpadBtn::Right);
+        let order = if row_with_void == btn.pos().row {
+            Order::HorizFirst
+        } else {
+            Order::VertFirst
+        };
+
+        match order {
+            Order::HorizFirst => {
+                while btn.pos().col > pos.col {
+                    pos.col += 1;
+                    moves.push(DpadBtn::Right);
+                }
+                while btn.pos().col < pos.col {
+                    pos.col -= 1;
+                    moves.push(DpadBtn::Left);
+                }
+                while btn.pos().row > pos.row {
+                    pos.row += 1;
+                    moves.push(DpadBtn::Down);
+                }
+                while btn.pos().row < pos.row {
+                    pos.row -= 1;
+                    moves.push(DpadBtn::Up);
+                }
+            }
+            Order::VertFirst => {
+                while btn.pos().row > pos.row {
+                    pos.row += 1;
+                    moves.push(DpadBtn::Down);
+                }
+                while btn.pos().row < pos.row {
+                    pos.row -= 1;
+                    moves.push(DpadBtn::Up);
+                }
+                while btn.pos().col > pos.col {
+                    pos.col += 1;
+                    moves.push(DpadBtn::Right);
+                }
+                while btn.pos().col < pos.col {
+                    pos.col -= 1;
+                    moves.push(DpadBtn::Left);
+                }
+            }
         }
-        while btn.pos().col < pos.col {
-            pos.col -= 1;
-            moves.push(DpadBtn::Left);
-        }
-        while btn.pos().row > pos.row {
-            pos.row += 1;
-            moves.push(DpadBtn::Down);
-        }
-        while btn.pos().row < pos.row {
-            pos.row -= 1;
-            moves.push(DpadBtn::Up);
-        }
+
         moves.push(DpadBtn::A);
     }
 
@@ -212,7 +247,7 @@ fn det_cost(
         moves.len() as i32
     } else {
         // moves.len() as i32 + det_cost(DpadBtn::A.pos(), indirections - 1, moves)
-        det_cost(DpadBtn::A.pos(), indirections - 1, moves)
+        det_cost(DpadBtn::A.pos(), 1, indirections - 1, moves)
     }
 }
 
@@ -229,7 +264,7 @@ fn process(input: &str) -> i32 {
                 .filter_map(|char| char.try_into().ok())
                 .collect();
             println!("Determining the cost of {:?}", buttons);
-            let presses = det_cost(KeypadBtn::A.pos(), indirections, buttons.into_iter());
+            let presses = det_cost(KeypadBtn::A.pos(), 0, indirections, buttons.into_iter());
             println!("==================================================================");
             println!("Above calculation was for: {line}");
             println!("Presses required: {presses}");
