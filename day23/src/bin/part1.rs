@@ -22,7 +22,6 @@ fn process(input: &str) -> usize {
             }
         }
     }
-    dbg!(&interconnected);
 
     interconnected.len()
 }
