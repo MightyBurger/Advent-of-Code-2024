@@ -100,7 +100,7 @@ fn process(input: &str) -> u64 {
                 (Some(true), Some(true), Relation::XOR) => Some(false),
             };
             match net_new_value {
-                None => next_queue.push(item),
+                None => (),
                 Some(_) => {
                     for next_in_line in netlist.iter().filter(|(_, net)| match net.dependants {
                         Some((dep1, dep2)) if dep1 == item || dep2 == item => true,
