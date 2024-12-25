@@ -22,6 +22,10 @@ In the root of the repository, run
 
 `cargo run -p day01 --bin part1`
 
+## Results
+
+![results](resources/image.png)
+
 ## License
 
 Licensed under either of
